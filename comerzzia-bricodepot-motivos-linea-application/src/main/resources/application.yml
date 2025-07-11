@@ -1,0 +1,8 @@
+spring:    
+    application:
+        name: "motivos linea"
+    main.allow-bean-definition-overriding: true
+        
+logging:
+    level:
+        ROOT: INFO       
