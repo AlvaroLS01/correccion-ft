@@ -1,0 +1,8 @@
+spring:    
+    application:
+        name: "correccion-ft"
+    main.allow-bean-definition-overriding: true
+        
+logging:
+    level:
+        ROOT: INFO       
