@@ -2,7 +2,7 @@ package com.comerzzia.bricodepot.correccionft.services.correccion;
 
 import com.comerzzia.bricodepot.correccionft.model.xml.LineaTicket;
 import com.comerzzia.bricodepot.correccionft.model.xml.TicketXml;
-import com.comerzzia.bricodepot.correccionft.persistence.ConnectionProvider;
+import com.comerzzia.bricodepot.correccionft.persistence.ProveedorConexion;
 import com.comerzzia.bricodepot.correccionft.persistence.TicketsDao;
 
 import javax.xml.bind.JAXBContext;
@@ -31,7 +31,7 @@ public class CorreccionFtService {
     private static final Logger log = LoggerFactory.getLogger(CorreccionFtService.class);
 
     @Autowired
-    private ConnectionProvider provider;
+    private ProveedorConexion proveedorConexion;
 
     @Value("${comerzzia.uid_actividad}")
     private String uidActividad;
@@ -44,7 +44,7 @@ public class CorreccionFtService {
     public void procesarCsv(BufferedReader reader) {
         Connection conexion = null;
         try {
-            conexion = provider.getConnection();
+            conexion = proveedorConexion.obtenerConexion();
             JAXBContext context = JAXBContext.newInstance(TicketXml.class);
             Unmarshaller unmarshaller = context.createUnmarshaller();
             Marshaller marshaller = context.createMarshaller();
