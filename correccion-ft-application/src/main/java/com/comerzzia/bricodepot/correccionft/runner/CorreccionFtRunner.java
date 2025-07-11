@@ -12,7 +12,7 @@ import java.io.FileReader;
 public class CorreccionFtRunner implements CommandLineRunner {
 
     @Autowired
-    private CorreccionFtService service;
+    private CorreccionFtService servicio;
 
     @Override
     public void run(String... args) throws Exception {
@@ -20,7 +20,7 @@ public class CorreccionFtRunner implements CommandLineRunner {
             return;
         }
         try (BufferedReader reader = new BufferedReader(new FileReader(args[0]))) {
-            service.procesarCsv(reader);
+            servicio.procesarCsv(reader);
         }
     }
 }
