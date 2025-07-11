@@ -75,7 +75,7 @@ public class CorreccionFtService {
                     log.error("Error procesando la fila para {}: {}", uidFt, e.getMessage(), e);
                 }
             }
-        } catch (SQLException | IOException | JAXBException e) {
+        } catch (IOException | JAXBException e) {
             log.error("Error procesando CSV: " + e.getMessage(), e);
         }
     }
