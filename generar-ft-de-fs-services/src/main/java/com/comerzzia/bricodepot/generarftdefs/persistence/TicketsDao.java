@@ -51,7 +51,7 @@ public class TicketsDao {
 
         public static void actualizarTicket(Connection conexion, String uidActividad, String uidTicket, String xml)
                         throws SQLException {
-                String sql = "update d_tickets_tbl set ticket = ?, procesado = 'N' where uid_actividad = ? and uid_ticket = ?";
+                String sql = "update d_tickets_tbl set ticket = ?, procesado = 'E' where uid_actividad = ? and uid_ticket = ?";
                 PreparedStatement stmt = conexion.prepareStatement(sql);
                 stmt.setString(1, xml);
                 stmt.setString(2, uidActividad);
