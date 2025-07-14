@@ -1,4 +1,4 @@
-package com.comerzzia.bricodepot.generarftdefs.services.correccion;
+package com.comerzzia.bricodepot.generarftdefs.services.generacion;
 
 import com.comerzzia.bricodepot.generarftdefs.persistence.ProveedorConexion;
 import com.comerzzia.bricodepot.generarftdefs.persistence.TicketsDao;
@@ -34,9 +34,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CorreccionFtService {
+public class GenerarFtDeFsService {
 
-    private static final Logger log = LoggerFactory.getLogger(CorreccionFtService.class);
+    private static final Logger log = LoggerFactory.getLogger(GenerarFtDeFsService.class);
 
     @Autowired
     private ProveedorConexion proveedorConexion;
