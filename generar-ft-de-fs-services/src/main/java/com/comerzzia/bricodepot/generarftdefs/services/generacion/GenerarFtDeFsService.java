@@ -70,6 +70,7 @@ public class GenerarFtDeFsService {
                         Document combinado = combinarTickets(fs, ft);
                         String xmlCorregido = marshalTicket(combinado);
                         TicketsDao.actualizarTicket(conexion, uidActividad, uidFt, xmlCorregido);
+                        TicketsDao.eliminarAlbaran(conexion, uidActividad, uidFt);
                     }
                 } catch (Exception e) {
                     log.error("Error procesando la fila para {}: {}", uidFt, e.getMessage(), e);
