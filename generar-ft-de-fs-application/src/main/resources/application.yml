@@ -13,6 +13,6 @@ comerzzia:
         user: czz_bricodepot
         pass: czz_bricodepot
         class: com.mysql.cj.jdbc.Driver
-    uid_actividad: "1"
+    uid_actividad: "40f314f4-8a6e-4c38-82f6-a95a5c8dd0af"
     csv:
         path: ../correcciones.csv
