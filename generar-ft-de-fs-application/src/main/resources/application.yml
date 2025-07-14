@@ -15,4 +15,4 @@ comerzzia:
         class: com.mysql.cj.jdbc.Driver
     uid_actividad: "1"
     csv:
-        path: correcciones.csv
+        path: ../correcciones.csv
