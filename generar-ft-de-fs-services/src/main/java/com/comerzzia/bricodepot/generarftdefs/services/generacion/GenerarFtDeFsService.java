@@ -71,8 +71,8 @@ public class GenerarFtDeFsService {
                     Document fs = obtenerTicket(conexion, uidFs);
                     Document ft = obtenerTicket(conexion, uidFt);
                     if (fs != null && ft != null) {
-                        corregirTicket(fs, ft);
-                        String xmlCorregido = marshalTicket(ft);
+                        Document combinado = combinarTickets(fs, ft);
+                        String xmlCorregido = marshalTicket(combinado);
                         TicketsDao.actualizarTicket(conexion, uidActividad, uidFt, xmlCorregido);
                     }
                 } catch (Exception e) {
@@ -111,61 +111,18 @@ public class GenerarFtDeFsService {
     }
 
     /**
-     * Corrige la información del ticket FT copiando los datos de la FS asociada.
+     * Combina el ticket FS con la cabecera y datos de facturación del ticket FT.
+     *
+     * @return Documento con el contenido fusionado
      */
-    private void corregirTicket(Document fs, Document ft) {
-        Element cabeceraFs = (Element) fs.getElementsByTagName("cabecera").item(0);
+    private Document combinarTickets(Document fs, Document ft) {
         Element cabeceraFt = (Element) ft.getElementsByTagName("cabecera").item(0);
-        if (cabeceraFs != null && cabeceraFt != null) {
-            copiarNodo(cabeceraFs, cabeceraFt, "lineasimpuestos");
-            copiarNodo(cabeceraFs, cabeceraFt, "totales");
+        Element cabeceraFs = (Element) fs.getElementsByTagName("cabecera").item(0);
+        if (cabeceraFt != null && cabeceraFs != null) {
+            Node importado = fs.importNode(cabeceraFt, true);
+            cabeceraFs.getParentNode().replaceChild(importado, cabeceraFs);
         }
-
-        Element pagosFs = (Element) fs.getElementsByTagName("pagos").item(0);
-        Element pagosFt = (Element) ft.getElementsByTagName("pagos").item(0);
-        if (pagosFs != null && pagosFt != null) {
-            Node nuevo = ft.importNode(pagosFs, true);
-            pagosFt.getParentNode().replaceChild(nuevo, pagosFt);
-        }
-
-        NodeList lineasFs = fs.getElementsByTagName("linea");
-        NodeList lineasFt = ft.getElementsByTagName("linea");
-        int size = Math.min(lineasFs.getLength(), lineasFt.getLength());
-        for (int i = 0; i < size; i++) {
-            Element lfs = (Element) lineasFs.item(i);
-            Element lft = (Element) lineasFt.item(i);
-            copiarTexto(lfs, lft, "precio_tarifa_origen");
-            copiarTexto(lfs, lft, "precio_total_tarifa_origen");
-            copiarTexto(lfs, lft, "precio_sin_dto");
-            copiarTexto(lfs, lft, "precio_total_sin_dto");
-            copiarTexto(lfs, lft, "precio");
-            copiarTexto(lfs, lft, "precio_total");
-            copiarTexto(lfs, lft, "importe");
-            copiarTexto(lfs, lft, "importe_total");
-        }
-    }
-
-    private void copiarNodo(Element origen, Element destino, String nombre) {
-        NodeList lista = origen.getElementsByTagName(nombre);
-        if (lista.getLength() == 0) {
-            return;
-        }
-        Node nodoOrigen = lista.item(0);
-        Node nodoImportado = destino.getOwnerDocument().importNode(nodoOrigen, true);
-        NodeList existentes = destino.getElementsByTagName(nombre);
-        if (existentes.getLength() > 0) {
-            destino.replaceChild(nodoImportado, existentes.item(0));
-        } else {
-            destino.appendChild(nodoImportado);
-        }
-    }
-
-    private void copiarTexto(Element origen, Element destino, String nombre) {
-        NodeList fromList = origen.getElementsByTagName(nombre);
-        NodeList toList = destino.getElementsByTagName(nombre);
-        if (fromList.getLength() > 0 && toList.getLength() > 0) {
-            toList.item(0).setTextContent(fromList.item(0).getTextContent());
-        }
+        return fs;
     }
 
     private String sanitizeXml(String xml) {
