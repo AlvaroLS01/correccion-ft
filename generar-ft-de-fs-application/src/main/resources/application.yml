@@ -1,0 +1,8 @@
+spring:    
+    application:
+        name: "generar-ft-de-fs"
+    main.allow-bean-definition-overriding: true
+        
+logging:
+    level:
+        ROOT: INFO       

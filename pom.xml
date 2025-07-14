@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.comerzzia.bricodepot</groupId>
-  <artifactId>correccion-ft</artifactId>
+  <artifactId>generar-ft-de-fs</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
@@ -83,7 +83,7 @@
   </build>
 
   <modules>
-    <module>correccion-ft-application</module>
-    <module>correccion-ft-services</module>
+    <module>generar-ft-de-fs-application</module>
+    <module>generar-ft-de-fs-services</module>
   </modules>
 </project>
