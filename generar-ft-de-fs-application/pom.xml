@@ -9,6 +9,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
         <artifactId>generar-ft-de-fs-application</artifactId>
+        <packaging>jar</packaging>
         <name>com.comerzzia.bricodepot.generarftdefs-application</name>
         <description>generar ft de fs application</description>
 	

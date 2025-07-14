@@ -7,6 +7,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
         <artifactId>generar-ft-de-fs-services</artifactId>
+        <packaging>jar</packaging>
         <name>com.comerzzia.bricodepot.generarftdefs.services</name>
         <description>generar ft de fs service</description>
 	
