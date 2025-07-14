@@ -6,10 +6,10 @@ import org.springframework.context.annotation.ImportResource;
 
 @ImportResource({"classpath*:comerzzia-*context.xml"})
 @SpringBootApplication
-public class CorreccionFtApplication{
+public class GenerarFtDeFsApplication {
 
-        public static void main(String[] args) {
-                SpringApplication.run(CorreccionFtApplication.class, args);
-        }
+    public static void main(String[] args) {
+        SpringApplication.run(GenerarFtDeFsApplication.class, args);
+    }
 
 }
