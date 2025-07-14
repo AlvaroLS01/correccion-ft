@@ -3,12 +3,8 @@ package com.comerzzia.bricodepot.generarftdefs.services.generacion;
 import com.comerzzia.bricodepot.generarftdefs.persistence.ProveedorConexion;
 import com.comerzzia.bricodepot.generarftdefs.persistence.TicketsDao;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import javax.xml.transform.OutputKeys;
@@ -24,8 +20,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+import com.comerzzia.core.util.xml.XMLDocument;
+import com.comerzzia.core.util.xml.XMLDocumentException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,16 +81,14 @@ public class GenerarFtDeFsService {
     }
 
     private Document obtenerTicket(Connection conexion, String uidTicket)
-            throws SQLException, ParserConfigurationException, IOException, SAXException {
+            throws SQLException, XMLDocumentException {
         ResultSet rs = TicketsDao.consultarTicketPorUid(conexion, uidActividad, uidTicket);
         Document doc = null;
         if (rs.next()) {
             String xml = rs.getString("ticket");
             xml = sanitizeXml(xml);
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(true);
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            doc = builder.parse(new InputSource(new StringReader(xml)));
+            XMLDocument xmlDocument = new XMLDocument(xml.getBytes(StandardCharsets.UTF_8));
+            doc = xmlDocument.getDocument();
         }
         rs.close();
         return doc;
