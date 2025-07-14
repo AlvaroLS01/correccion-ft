@@ -60,7 +60,7 @@ public class GenerarFtDeFsService {
                 return;
             }
             while ((linea = reader.readLine()) != null) {
-                String[] partes = linea.split(",");
+                String[] partes = linea.split(";");
                 if (partes.length < 4) {
                     continue;
                 }
