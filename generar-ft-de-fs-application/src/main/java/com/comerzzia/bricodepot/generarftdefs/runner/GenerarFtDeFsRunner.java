@@ -15,7 +15,7 @@ public class GenerarFtDeFsRunner implements CommandLineRunner {
     @Autowired
     private GenerarFtDeFsService servicio;
 
-    @Value("${comerzzia.csv.path:correcciones.csv}")
+    @Value("${comerzzia.csv.path:../correcciones.csv}")
     private String csvPath;
 
     @Override
