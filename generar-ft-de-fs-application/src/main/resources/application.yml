@@ -5,4 +5,14 @@ spring:
         
 logging:
     level:
-        ROOT: INFO       
+        ROOT: INFO
+
+comerzzia:
+    db:
+        url: jdbc:mysql://172.16.102.35:33062/czz_bricodepot
+        user: czz_bricodepot
+        pass: czz_bricodepot
+        class: com.mysql.cj.jdbc.Driver
+    uid_actividad: "1"
+    csv:
+        path: correcciones.csv
