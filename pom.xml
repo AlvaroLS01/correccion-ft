@@ -13,7 +13,39 @@
     <java.version>1.8</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring-boot.version>2.5.5</spring-boot.version>
+    <comerzzia.backoffice.version>4.8.1.230720</comerzzia.backoffice.version>
   </properties>
+
+  <repositories>
+    <repository>
+      <id>comerzzia</id>
+      <url>http://repo.comerzzia.com/artifactory/comerzzia/</url>
+    </repository>
+    <repository>
+      <id>clientes</id>
+      <url>http://software.tier1.es/artifactory/clientes.local/</url>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>comerzzia</id>
+      <url>http://repo.comerzzia.com/artifactory/comerzzia/</url>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <distributionManagement>
+    <repository>
+      <id>artifactory</id>
+      <name>vm-bugtrac.mpcorporacion.com-releases</name>
+      <url>http://software.tier1.es/artifactory/clientes.local</url>
+    </repository>
+    <snapshotRepository>
+      <id>artifactory</id>
+      <name>vm-bugtrac.mpcorporacion.com-snapshots</name>
+      <url>http://software.tier1.es/artifactory/clientes.local</url>
+    </snapshotRepository>
+  </distributionManagement>
 
   <dependencyManagement>
     <dependencies>
@@ -21,6 +53,13 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
         <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.comerzzia</groupId>
+        <artifactId>comerzzia-backoffice-dependencies</artifactId>
+        <version>${comerzzia.backoffice.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
