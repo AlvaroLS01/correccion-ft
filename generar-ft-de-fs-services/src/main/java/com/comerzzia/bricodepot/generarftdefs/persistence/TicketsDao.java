@@ -131,10 +131,11 @@ public class TicketsDao {
                 stmtEnl.executeUpdate();
                 stmtEnl.close();
 
-                String sqlXTickets = "delete from x_tickets_tbl where uid_actividad = ? and uid_ticket = ?";
+                String sqlXTickets = "delete from x_tickets_tbl where uid_actividad = ? and (uid_ticket = ? or uid_factura_completa = ?)";
                 PreparedStatement stmtXTickets = conexion.prepareStatement(sqlXTickets);
                 stmtXTickets.setString(1, uidActividad);
                 stmtXTickets.setString(2, uidTicket);
+                stmtXTickets.setString(3, uidTicket);
                 log.info("eliminarAlbaranDependencias() - " + stmtXTickets.toString());
                 stmtXTickets.executeUpdate();
                 stmtXTickets.close();
