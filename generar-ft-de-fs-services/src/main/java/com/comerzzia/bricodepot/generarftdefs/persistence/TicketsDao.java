@@ -61,11 +61,30 @@ public class TicketsDao {
         }
 
         /**
+         * Elimina registros en x_tickets_tbl que tengan como uid_factura_completa
+         * el ticket indicado.
+         */
+        public static void eliminarXTicketsPorFacturaCompleta(Connection conexion, String uidActividad, String uidFacturaCompleta)
+                        throws SQLException {
+                String sql = "delete from x_tickets_tbl where uid_actividad = ? and uid_factura_completa = ?";
+                PreparedStatement stmt = conexion.prepareStatement(sql);
+                stmt.setString(1, uidActividad);
+                stmt.setString(2, uidFacturaCompleta);
+                log.info("eliminarXTicketsPorFacturaCompleta() - " + stmt.toString());
+                stmt.executeUpdate();
+                stmt.close();
+        }
+
+        /**
          * Elimina el albarán asociado al ticket indicado. Se borran todos los
          * registros dependientes antes de eliminar la cabecera del albarán.
          */
         public static void eliminarAlbaran(Connection conexion, String uidActividad, String uidTicket)
                         throws SQLException {
+                // Aseguramos que no queden registros en x_tickets_tbl asociados
+                // a este ticket por uid_factura_completa antes de eliminar la cabecera
+                eliminarXTicketsPorFacturaCompleta(conexion, uidActividad, uidTicket);
+
                 String selectSql = "select id_clie_albaran from d_clie_albaranes_cab_tbl where uid_actividad = ? and uid_ticket = ?";
                 PreparedStatement selectStmt = conexion.prepareStatement(selectSql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
                 selectStmt.setString(1, uidActividad);
