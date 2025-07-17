@@ -49,6 +49,7 @@ public class GenerarFtDeFsService {
         Connection conexion = null;
         try {
             conexion = proveedorConexion.obtenerConexion();
+            conexion.setAutoCommit(false);
 
             String linea = reader.readLine();
             // Saltamos cabecera
@@ -69,15 +70,31 @@ public class GenerarFtDeFsService {
                     if (fs != null && ft != null) {
                         Document combinado = combinarTickets(fs, ft);
                         String xmlCorregido = marshalTicket(combinado);
-                        TicketsDao.actualizarTicket(conexion, uidActividad, uidFt, xmlCorregido);
                         TicketsDao.eliminarAlbaran(conexion, uidActividad, uidFt);
+                        TicketsDao.actualizarTicket(conexion, uidActividad, uidFt, xmlCorregido);
+                        conexion.commit();
                     }
                 } catch (Exception e) {
                     log.error("Error procesando la fila para {}: {}", uidFt, e.getMessage(), e);
+                    try {
+                        if (conexion != null) {
+                            conexion.rollback();
+                        }
+                    } catch (SQLException ex) {
+                        log.error("Error realizando rollback: " + ex.getMessage(), ex);
+                    }
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | SQLException e) {
             log.error("Error procesando CSV: " + e.getMessage(), e);
+        } finally {
+            if (conexion != null) {
+                try {
+                    conexion.close();
+                } catch (SQLException e) {
+                    log.error("Error cerrando conexion: " + e.getMessage(), e);
+                }
+            }
         }
     }
 
