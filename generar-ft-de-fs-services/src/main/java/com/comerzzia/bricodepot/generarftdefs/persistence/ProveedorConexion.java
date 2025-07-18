@@ -32,23 +32,24 @@ public class ProveedorConexion {
     public Connection obtenerConexion() {
 
         if (conexion == null) {
-                log.info("Inicio de conexion a la BBDD");
-                log.info("URL: " + url);
-                log.info("USER: " + usuario);
-			try {
-                                Class.forName(claseDb);
-                                conexion = DriverManager.getConnection(url, usuario, contrasena);
-                                if (conexion != null) {
-                                        return conexion;
-				}
-                        } catch (ClassNotFoundException e) {
-                                log.error("Ha ocurrido un error: " + e.getMessage(), e);
-                        } catch (SQLException e) {
-                                log.error("Ha ocurrido un error: " + e.getMessage(), e);
-			}
-                } else {
-                        return conexion;
+                log.debug("obtenerConexion() - Inicio de conexion a la BBDD");
+                log.debug("obtenerConexion() - URL: " + url);
+                log.debug("obtenerConexion() - USER: " + usuario);
+                try {
+                        Class.forName(claseDb);
+                        conexion = DriverManager.getConnection(url, usuario, contrasena);
+                        if (conexion != null) {
+                                return conexion;
+                        }
+                } catch (ClassNotFoundException e) {
+                        log.error("obtenerConexion() - " + e.getClass().getName() + " - " + e.getLocalizedMessage(), e);
+                } catch (SQLException e) {
+                        log.error("obtenerConexion() - " + e.getClass().getName() + " - " + e.getLocalizedMessage(), e);
                 }
+        } else {
+                log.debug("obtenerConexion() - Utilizando conexion existente");
+                return conexion;
+        }
 
                 return conexion;
         }

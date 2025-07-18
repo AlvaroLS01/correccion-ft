@@ -48,8 +48,10 @@ public class GenerarFtDeFsService {
     public void procesarCsv(BufferedReader reader) {
         Connection conexion = null;
         try {
+            log.debug("procesarCsv() - Obteniendo conexión a base de datos");
             conexion = proveedorConexion.obtenerConexion();
             conexion.setAutoCommit(false);
+            log.debug("procesarCsv() - Conexión establecida");
 
             String linea = reader.readLine();
             // Saltamos cabecera
@@ -63,36 +65,42 @@ public class GenerarFtDeFsService {
                 }
                 String uidFs = partes[0].trim();
                 String uidFt = partes[2].trim();
+                log.debug("procesarCsv() - Procesando corrección FS " + uidFs + " FT " + uidFt);
 
                 try {
                     Document fs = obtenerTicket(conexion, uidFs);
                     Document ft = obtenerTicket(conexion, uidFt);
+                    log.debug("procesarCsv() - Tickets obtenidos");
                     if (fs != null && ft != null) {
                         Document combinado = combinarTickets(fs, ft);
+                        log.debug("procesarCsv() - Tickets combinados");
                         String xmlCorregido = marshalTicket(combinado);
                         TicketsDao.eliminarAlbaran(conexion, uidActividad, uidFt);
                         TicketsDao.actualizarTicket(conexion, uidActividad, uidFt, xmlCorregido);
                         conexion.commit();
+                        log.debug("procesarCsv() - Ticket " + uidFt + " actualizado");
                     }
                 } catch (Exception e) {
-                    log.error("Error procesando la fila para {}: {}", uidFt, e.getMessage(), e);
+                    log.error("procesarCsv() - " + e.getClass().getName() + " - " + e.getLocalizedMessage(), e);
+                    log.debug("procesarCsv() - Revirtiendo transacción");
                     try {
                         if (conexion != null) {
                             conexion.rollback();
                         }
                     } catch (SQLException ex) {
-                        log.error("Error realizando rollback: " + ex.getMessage(), ex);
+                        log.error("procesarCsv() - " + ex.getClass().getName() + " - " + ex.getLocalizedMessage(), ex);
                     }
                 }
             }
         } catch (IOException | SQLException e) {
-            log.error("Error procesando CSV: " + e.getMessage(), e);
+            log.error("procesarCsv() - " + e.getClass().getName() + " - " + e.getLocalizedMessage(), e);
         } finally {
             if (conexion != null) {
                 try {
+                    log.debug("procesarCsv() - Cerrando conexión");
                     conexion.close();
                 } catch (SQLException e) {
-                    log.error("Error cerrando conexion: " + e.getMessage(), e);
+                    log.error("procesarCsv() - " + e.getClass().getName() + " - " + e.getLocalizedMessage(), e);
                 }
             }
         }

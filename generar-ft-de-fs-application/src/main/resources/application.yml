@@ -6,6 +6,7 @@ spring:
 logging:
     level:
         ROOT: INFO
+        com.comerzzia.bricodepot: DEBUG
 
 comerzzia:
     db:
