@@ -5,6 +5,8 @@ import com.comerzzia.bricodepot.generarftdefs.persistence.TicketsDao;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import javax.xml.transform.OutputKeys;
@@ -40,6 +42,9 @@ public class GenerarFtDeFsService {
     @Value("${comerzzia.uid_actividad}")
     private String uidActividad;
 
+    @Value("${comerzzia.xml.backup-path:../xml_antiguos}")
+    private String backupPath;
+
     /**
      * Procesa un fichero CSV con las correcciones necesarias.
      *
@@ -72,6 +77,7 @@ public class GenerarFtDeFsService {
                     Document ft = obtenerTicket(conexion, uidFt);
                     log.debug("procesarCsv() - Tickets obtenidos");
                     if (fs != null && ft != null) {
+                        backupXml(uidFt, ft);
                         Document combinado = combinarTickets(fs, ft);
                         log.debug("procesarCsv() - Tickets combinados");
                         String xmlCorregido = marshalTicket(combinado);
@@ -129,6 +135,23 @@ public class GenerarFtDeFsService {
         StringWriter writer = new StringWriter();
         transformer.transform(new DOMSource(ticket), new StreamResult(writer));
         return writer.toString();
+    }
+
+    private void backupXml(String uid, Document ft) {
+        try {
+            String xml = marshalTicket(ft);
+            File dir = new File(backupPath);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            File fichero = new File(dir, uid + ".xml");
+            try (FileWriter writer = new FileWriter(fichero)) {
+                writer.write(xml);
+            }
+            log.debug("backupXml() - Ticket " + uid + " guardado en " + fichero.getAbsolutePath());
+        } catch (IOException | TransformerException e) {
+            log.error("backupXml() - " + e.getClass().getName() + " - " + e.getLocalizedMessage(), e);
+        }
     }
 
     /**
