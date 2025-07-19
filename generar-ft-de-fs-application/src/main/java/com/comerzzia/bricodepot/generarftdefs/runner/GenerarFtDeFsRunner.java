@@ -24,10 +24,10 @@ public class GenerarFtDeFsRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        log.debug("run() - Leyendo fichero CSV de correcciones desde " + csvPath);
+        log.info("Leyendo las correcciones del fichero CSV en " + csvPath);
         try (BufferedReader reader = new BufferedReader(new FileReader(csvPath))) {
             servicio.procesarCsv(reader);
-            log.debug("run() - Procesamiento de correcciones finalizado");
+            log.info("El procesamiento de las correcciones ha terminado");
         }
     }
 }

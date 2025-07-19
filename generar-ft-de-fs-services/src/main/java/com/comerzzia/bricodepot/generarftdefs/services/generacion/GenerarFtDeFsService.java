@@ -54,10 +54,10 @@ public class GenerarFtDeFsService {
     public void procesarCsv(BufferedReader reader) {
         Connection conexion = null;
         try {
-            log.debug("procesarCsv() - Obteniendo conexión a base de datos");
+            log.info("Conectando a la base de datos...");
             conexion = proveedorConexion.obtenerConexion();
             conexion.setAutoCommit(false);
-            log.debug("procesarCsv() - Conexión establecida");
+            log.info("Conexión establecida.");
 
             String linea = reader.readLine();
             // Saltamos cabecera
@@ -71,26 +71,26 @@ public class GenerarFtDeFsService {
                 }
                 String uidFs = partes[0].trim();
                 String uidFt = partes[2].trim();
-                log.debug("procesarCsv() - Procesando corrección FS " + uidFs + " FT " + uidFt);
+                log.info("Aplicando la corrección del ticket FS " + uidFs + " al ticket FT " + uidFt + "...");
 
                 try {
                     Document fs = obtenerTicket(conexion, uidFs);
                     String xmlFtOriginal = obtenerTicketXml(conexion, uidFt);
                     Document ft = xmlFtOriginal != null ? parseXml(xmlFtOriginal) : null;
-                    log.debug("procesarCsv() - Tickets obtenidos");
+                    log.info("Tickets cargados correctamente.");
                     if (fs != null && ft != null) {
                         guardarXmlAntiguo(uidFt, xmlFtOriginal);
                         Document combinado = combinarTickets(fs, ft);
-                        log.debug("procesarCsv() - Tickets combinados");
+                        log.info("Información de los tickets combinada.");
                         String xmlCorregido = marshalTicket(combinado);
                         TicketsDao.eliminarAlbaran(conexion, uidActividad, uidFt);
                         TicketsDao.actualizarTicket(conexion, uidActividad, uidFt, xmlCorregido);
                         conexion.commit();
-                        log.debug("procesarCsv() - Ticket " + uidFt + " actualizado");
+                        log.info("Ticket " + uidFt + " actualizado.");
                     }
                 } catch (Exception e) {
                     log.error("procesarCsv() - " + e.getClass().getName() + " - " + e.getLocalizedMessage(), e);
-                    log.debug("procesarCsv() - Revirtiendo transacción");
+                    log.info("Ha ocurrido un problema. Deshaciendo los cambios.");
                     try {
                         if (conexion != null) {
                             conexion.rollback();
@@ -105,7 +105,7 @@ public class GenerarFtDeFsService {
         } finally {
             if (conexion != null) {
                 try {
-                    log.debug("procesarCsv() - Cerrando conexión");
+                    log.info("Cerrando la conexión con la base de datos.");
                     conexion.close();
                 } catch (SQLException e) {
                     log.error("procesarCsv() - " + e.getClass().getName() + " - " + e.getLocalizedMessage(), e);
@@ -125,15 +125,15 @@ public class GenerarFtDeFsService {
     }
 
     private String obtenerTicketXml(Connection conexion, String uidTicket) throws SQLException {
-        log.debug("obtenerTicketXml() - Consultando ticket " + uidTicket);
+        log.info("Buscando el ticket " + uidTicket + " en la base de datos...");
         ResultSet rs = TicketsDao.consultarTicketPorUid(conexion, uidActividad, uidTicket);
         String xml = null;
         if (rs.next()) {
             xml = rs.getString("ticket");
             xml = sanitizeXml(xml);
-            log.debug("obtenerTicketXml() - Ticket " + uidTicket + " encontrado");
+            log.info("Ticket " + uidTicket + " encontrado.");
         } else {
-            log.debug("obtenerTicketXml() - Ticket " + uidTicket + " no encontrado");
+            log.info("No se ha encontrado el ticket " + uidTicket + ".");
         }
         rs.close();
         return xml;
@@ -176,28 +176,28 @@ public class GenerarFtDeFsService {
 
     private Document parseXml(String xml) throws XMLDocumentException {
         if (xml == null) {
-            log.debug("parseXml() - XML nulo");
+            log.info("No se ha encontrado el XML.");
             return null;
         }
-        log.debug("parseXml() - Parseando XML");
+        log.info("Leyendo el XML.");
         XMLDocument xmlDocument = new XMLDocument(xml.getBytes(StandardCharsets.UTF_8));
         return xmlDocument.getDocument();
     }
 
     private void guardarXmlAntiguo(String uidFt, String xmlFt) {
         if (xmlFt == null) {
-            log.debug("guardarXmlAntiguo() - XML nulo para " + uidFt);
+            log.info("No hay XML para " + uidFt + ".");
             return;
         }
         try {
             Path dir = Paths.get(xmlBackupDir);
             if (!Files.exists(dir)) {
                 Files.createDirectories(dir);
-                log.debug("guardarXmlAntiguo() - Directorio creado " + dir.toString());
+                log.info("Se ha creado la carpeta " + dir.toString() + " para guardar el XML.");
             }
             Path ruta = dir.resolve(uidFt + ".xml");
             Files.write(ruta, xmlFt.getBytes(StandardCharsets.UTF_8));
-            log.debug("guardarXmlAntiguo() - XML guardado en " + ruta.toString());
+            log.info("XML guardado en " + ruta.toString() + ".");
         } catch (IOException e) {
             log.error("guardarXmlAntiguo() - " + e.getClass().getName() + " - " + e.getLocalizedMessage(), e);
         }

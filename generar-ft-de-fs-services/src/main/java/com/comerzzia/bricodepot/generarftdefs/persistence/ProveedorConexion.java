@@ -32,9 +32,9 @@ public class ProveedorConexion {
     public Connection obtenerConexion() {
 
         if (conexion == null) {
-                log.debug("obtenerConexion() - Inicio de conexion a la BBDD");
-                log.debug("obtenerConexion() - URL: " + url);
-                log.debug("obtenerConexion() - USER: " + usuario);
+                log.info("Estableciendo conexión con la base de datos...");
+                log.info("URL de la base de datos: " + url);
+                log.info("Usuario de la base de datos: " + usuario);
                 try {
                         Class.forName(claseDb);
                         conexion = DriverManager.getConnection(url, usuario, contrasena);
@@ -47,7 +47,7 @@ public class ProveedorConexion {
                         log.error("obtenerConexion() - " + e.getClass().getName() + " - " + e.getLocalizedMessage(), e);
                 }
         } else {
-                log.debug("obtenerConexion() - Utilizando conexion existente");
+                log.info("Usando la conexión ya abierta.");
                 return conexion;
         }
 
