@@ -164,7 +164,7 @@ public class TicketsDao {
                         throws SQLException {
                 String selectSql = "select linea, cargo from d_caja_det_tbl "
                                 + "where uid_actividad = ? and uid_diario_caja = ? "
-                                + "and id_documento = ?";
+                                + "and id_documento = ? order by linea";
                 PreparedStatement selectStmt = conexion.prepareStatement(selectSql);
                 selectStmt.setString(1, uidActividad);
                 selectStmt.setString(2, uidDiarioCaja);
@@ -181,11 +181,15 @@ public class TicketsDao {
                         java.math.BigDecimal cargo = rs.getBigDecimal("cargo");
                         int linea = rs.getInt("linea");
                         if (cargo != null && cargo.compareTo(java.math.BigDecimal.ZERO) >= 0) {
-                                lineaPos = linea;
-                                cargoPos = cargo;
+                                if (lineaPos == null) {
+                                        lineaPos = linea;
+                                        cargoPos = cargo;
+                                }
                         } else if (cargo != null) {
-                                lineaNeg = linea;
-                                cargoNeg = cargo;
+                                if (lineaNeg == null) {
+                                        lineaNeg = linea;
+                                        cargoNeg = cargo;
+                                }
                         }
                 }
                 rs.close();
