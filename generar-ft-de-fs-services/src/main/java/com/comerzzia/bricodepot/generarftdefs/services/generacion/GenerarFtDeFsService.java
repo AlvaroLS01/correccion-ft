@@ -21,8 +21,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
 import com.comerzzia.core.util.xml.XMLDocument;
 import com.comerzzia.core.util.xml.XMLDocumentException;
 
@@ -85,6 +85,15 @@ public class GenerarFtDeFsService {
                         String xmlCorregido = marshalTicket(combinado);
                         TicketsDao.eliminarAlbaran(conexion, uidActividad, uidFt);
                         TicketsDao.actualizarTicket(conexion, uidActividad, uidFt, xmlCorregido);
+
+                        Document corregidoDoc = parseXml(xmlCorregido);
+                        String uidDiarioCaja = obtenerValor(corregidoDoc, "uid_diario_caja");
+                        String uidTicket = obtenerValor(corregidoDoc, "uid_ticket");
+                        if (uidDiarioCaja != null && uidTicket != null) {
+                            log.debug("procesarCsv() - Ajustando caja uidDiarioCaja=" + uidDiarioCaja + " uidTicket=" + uidTicket);
+                            TicketsDao.ajustarMovimientosCaja(conexion, uidActividad, uidDiarioCaja, uidTicket);
+                        }
+
                         conexion.commit();
                         log.debug("procesarCsv() - Ticket " + uidFt + " actualizado");
                     }
@@ -182,6 +191,20 @@ public class GenerarFtDeFsService {
         log.debug("parseXml() - Parseando XML");
         XMLDocument xmlDocument = new XMLDocument(xml.getBytes(StandardCharsets.UTF_8));
         return xmlDocument.getDocument();
+    }
+
+    private String obtenerValor(Document doc, String tag) {
+        if (doc == null) {
+            return null;
+        }
+        NodeList nodes = doc.getElementsByTagName(tag);
+        if (nodes.getLength() > 0) {
+            Node node = nodes.item(0);
+            if (node != null) {
+                return node.getTextContent();
+            }
+        }
+        return null;
     }
 
     private void guardarXmlAntiguo(String uidFt, String xmlFt) {
