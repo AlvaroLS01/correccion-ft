@@ -19,6 +19,8 @@ import javax.xml.transform.stream.StreamResult;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -82,6 +84,8 @@ public class GenerarFtDeFsService {
                         guardarXmlAntiguo(uidFt, xmlFtOriginal);
                         Document combinado = combinarTickets(fs, ft);
                         log.debug("procesarCsv() - Tickets combinados");
+                        String uidDiarioCaja = obtenerUidDiarioCaja(fs);
+                        copiarMovimientos(conexion, uidDiarioCaja, uidFs, uidFt);
                         String xmlCorregido = marshalTicket(combinado);
                         TicketsDao.eliminarAlbaran(conexion, uidActividad, uidFt);
                         TicketsDao.actualizarTicket(conexion, uidActividad, uidFt, xmlCorregido);
@@ -163,6 +167,80 @@ public class GenerarFtDeFsService {
             cabeceraFs.getParentNode().replaceChild(importado, cabeceraFs);
         }
         return fs;
+    }
+
+    private String obtenerUidDiarioCaja(Document doc) {
+        NodeList nodes = doc.getElementsByTagName("uid_diario_caja");
+        if (nodes.getLength() > 0) {
+            return nodes.item(0).getTextContent();
+        }
+        return null;
+    }
+
+    private void copiarMovimientos(Connection conexion, String uidDiarioCaja, String uidFs, String uidFt)
+            throws SQLException {
+        if (uidDiarioCaja == null) {
+            return;
+        }
+
+        List<Movimiento> movFs = new ArrayList<>();
+        ResultSet rs = TicketsDao.consultarMovimientosCaja(conexion, uidActividad, uidDiarioCaja, uidFs);
+        while (rs.next()) {
+            Movimiento m = new Movimiento();
+            m.linea = rs.getInt("linea");
+            m.fecha = rs.getTimestamp("fecha");
+            m.cargo = rs.getBigDecimal("cargo");
+            m.abono = rs.getBigDecimal("abono");
+            m.codmedpag = rs.getString("codmedpag");
+            m.codconceptoMov = rs.getString("codconcepto_mov");
+            Object o = rs.getObject("id_tipo_documento");
+            m.idTipoDocumento = o != null ? rs.getLong("id_tipo_documento") : null;
+            m.uidTransaccionDet = rs.getString("uid_transaccion_det");
+            m.coddivisa = rs.getString("coddivisa");
+            m.tipoDeCambio = rs.getBigDecimal("tipo_de_cambio");
+            m.usuario = rs.getString("usuario");
+            movFs.add(m);
+        }
+        rs.close();
+
+        List<Movimiento> movFt = new ArrayList<>();
+        rs = TicketsDao.consultarMovimientosCaja(conexion, uidActividad, uidDiarioCaja, uidFt);
+        while (rs.next()) {
+            Movimiento m = new Movimiento();
+            m.concepto = rs.getString("concepto");
+            m.documento = rs.getString("documento");
+            movFt.add(m);
+        }
+        rs.close();
+
+        TicketsDao.borrarMovimientosCaja(conexion, uidActividad, uidDiarioCaja, uidFt);
+
+        for (int i = 0; i < movFs.size(); i++) {
+            Movimiento src = movFs.get(i);
+            String concepto = movFt.size() > i && movFt.get(i).concepto != null ? movFt.get(i).concepto
+                    : (!movFt.isEmpty() ? movFt.get(0).concepto : null);
+            String documento = movFt.size() > i && movFt.get(i).documento != null ? movFt.get(i).documento
+                    : (!movFt.isEmpty() ? movFt.get(0).documento : null);
+            TicketsDao.insertarMovimientoCaja(conexion, uidActividad, uidDiarioCaja, src.linea, src.fecha,
+                    src.cargo, src.abono, concepto, documento, src.codmedpag, uidFt, src.codconceptoMov,
+                    src.idTipoDocumento, src.uidTransaccionDet, src.coddivisa, src.tipoDeCambio, src.usuario);
+        }
+    }
+
+    private static class Movimiento {
+        int linea;
+        java.sql.Timestamp fecha;
+        java.math.BigDecimal cargo;
+        java.math.BigDecimal abono;
+        String concepto;
+        String documento;
+        String codmedpag;
+        String codconceptoMov;
+        Long idTipoDocumento;
+        String uidTransaccionDet;
+        String coddivisa;
+        java.math.BigDecimal tipoDeCambio;
+        String usuario;
     }
 
     private String sanitizeXml(String xml) {
