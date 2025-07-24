@@ -192,6 +192,8 @@ public class GenerarFtDeFsService {
             m.fecha = rs.getTimestamp("fecha");
             m.cargo = rs.getBigDecimal("cargo");
             m.abono = rs.getBigDecimal("abono");
+            m.concepto = rs.getString("concepto");
+            m.documento = rs.getString("documento");
             m.codmedpag = rs.getString("codmedpag");
             m.codconceptoMov = rs.getString("codconcepto_mov");
             Object o = rs.getObject("id_tipo_documento");
@@ -204,13 +206,12 @@ public class GenerarFtDeFsService {
         }
         rs.close();
 
+        // Obtenemos los movimientos actuales de la factura para conocer el último número de línea
         List<Movimiento> movFt = new ArrayList<>();
         rs = TicketsDao.consultarMovimientosCaja(conexion, uidActividad, uidDiarioCajaFt, uidFt);
         while (rs.next()) {
             Movimiento m = new Movimiento();
             m.linea = rs.getInt("linea");
-            m.concepto = rs.getString("concepto");
-            m.documento = rs.getString("documento");
             movFt.add(m);
         }
         rs.close();
@@ -218,24 +219,15 @@ public class GenerarFtDeFsService {
         // Borramos los movimientos existentes de la factura
         TicketsDao.borrarMovimientosCaja(conexion, uidActividad, uidDiarioCajaFt, uidFt);
 
-        // Numero de linea maximo existente tras borrar
+        // Numero de linea máximo existente tras borrar
         int lineaActual = TicketsDao.obtenerMaxLineaCaja(conexion, uidActividad, uidDiarioCajaFt);
 
-        int index = 0;
+        // Insertamos todos los movimientos del ticket FS al final
         for (Movimiento src : movFs) {
-            int linea;
-            if (index < movFt.size()) {
-                linea = movFt.get(index).linea;
-            } else {
-                lineaActual++;
-                linea = lineaActual;
-            }
-            String concepto = !movFt.isEmpty() && movFt.get(0).concepto != null ? movFt.get(0).concepto : null;
-            String documento = !movFt.isEmpty() && movFt.get(0).documento != null ? movFt.get(0).documento : null;
-            TicketsDao.insertarMovimientoCaja(conexion, uidActividad, uidDiarioCajaFt, linea, src.fecha,
-                    src.cargo, src.abono, concepto, documento, src.codmedpag, uidFt, src.codconceptoMov,
+            lineaActual++;
+            TicketsDao.insertarMovimientoCaja(conexion, uidActividad, uidDiarioCajaFt, lineaActual, src.fecha,
+                    src.cargo, src.abono, src.concepto, src.documento, src.codmedpag, uidFt, src.codconceptoMov,
                     src.idTipoDocumento, src.uidTransaccionDet, src.coddivisa, src.tipoDeCambio, src.usuario);
-            index++;
         }
     }
 
