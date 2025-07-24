@@ -214,6 +214,7 @@ public class GenerarFtDeFsService {
         rs.close();
 
         TicketsDao.borrarMovimientosCaja(conexion, uidActividad, uidDiarioCaja, uidFt);
+        TicketsDao.borrarMovimientosCaja(conexion, uidActividad, uidDiarioCaja, uidFs);
 
         for (int i = 0; i < movFs.size(); i++) {
             Movimiento src = movFs.get(i);
