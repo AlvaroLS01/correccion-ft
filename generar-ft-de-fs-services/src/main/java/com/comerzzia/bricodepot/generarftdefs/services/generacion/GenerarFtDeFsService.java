@@ -206,33 +206,36 @@ public class GenerarFtDeFsService {
 
         List<Movimiento> movFt = new ArrayList<>();
         rs = TicketsDao.consultarMovimientosCaja(conexion, uidActividad, uidDiarioCajaFt, uidFt);
-        int maxLineaFt = 0;
         while (rs.next()) {
             Movimiento m = new Movimiento();
-            int linea = rs.getInt("linea");
-            if (linea > maxLineaFt) {
-                maxLineaFt = linea;
-            }
+            m.linea = rs.getInt("linea");
             m.concepto = rs.getString("concepto");
             m.documento = rs.getString("documento");
             movFt.add(m);
         }
         rs.close();
+
+        // Borramos los movimientos existentes de la factura
         TicketsDao.borrarMovimientosCaja(conexion, uidActividad, uidDiarioCajaFt, uidFt);
 
-        // Obtener el maximo numero de linea existente tras borrar
+        // Numero de linea maximo existente tras borrar
         int lineaActual = TicketsDao.obtenerMaxLineaCaja(conexion, uidActividad, uidDiarioCajaFt);
-        if (lineaActual < maxLineaFt) {
-            lineaActual = maxLineaFt;
-        }
 
+        int index = 0;
         for (Movimiento src : movFs) {
-            lineaActual++;
+            int linea;
+            if (index < movFt.size()) {
+                linea = movFt.get(index).linea;
+            } else {
+                lineaActual++;
+                linea = lineaActual;
+            }
             String concepto = !movFt.isEmpty() && movFt.get(0).concepto != null ? movFt.get(0).concepto : null;
             String documento = !movFt.isEmpty() && movFt.get(0).documento != null ? movFt.get(0).documento : null;
-            TicketsDao.insertarMovimientoCaja(conexion, uidActividad, uidDiarioCajaFt, lineaActual, src.fecha,
+            TicketsDao.insertarMovimientoCaja(conexion, uidActividad, uidDiarioCajaFt, linea, src.fecha,
                     src.cargo, src.abono, concepto, documento, src.codmedpag, uidFt, src.codconceptoMov,
                     src.idTipoDocumento, src.uidTransaccionDet, src.coddivisa, src.tipoDeCambio, src.usuario);
+            index++;
         }
     }
 
