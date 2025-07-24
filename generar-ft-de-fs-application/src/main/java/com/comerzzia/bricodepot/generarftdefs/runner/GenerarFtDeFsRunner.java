@@ -14,20 +14,20 @@ import java.io.FileReader;
 @Component
 public class GenerarFtDeFsRunner implements CommandLineRunner {
 
-    @Autowired
-    private GenerarFtDeFsService servicio;
+	@Autowired
+	private GenerarFtDeFsService servicio;
 
-    private static final Logger log = LoggerFactory.getLogger(GenerarFtDeFsRunner.class);
+	private static final Logger log = LoggerFactory.getLogger(GenerarFtDeFsRunner.class);
 
-    @Value("${comerzzia.csv.path:../correcciones.csv}")
-    private String csvPath;
+	@Value("${comerzzia.csv.path:../correcciones.csv}")
+	private String csvPath;
 
-    @Override
-    public void run(String... args) throws Exception {
-        log.debug("run() - Leyendo fichero CSV de correcciones desde " + csvPath);
-        try (BufferedReader reader = new BufferedReader(new FileReader(csvPath))) {
-            servicio.procesarCsv(reader);
-            log.debug("run() - Procesamiento de correcciones finalizado");
-        }
-    }
+	@Override
+	public void run(String... args) throws Exception {
+		log.debug("run() - Leyendo fichero CSV de correcciones desde " + csvPath);
+		try (BufferedReader reader = new BufferedReader(new FileReader(csvPath))) {
+			servicio.procesarCsv(reader);
+			log.debug("run() - Procesamiento de correcciones finalizado");
+		}
+	}
 }
