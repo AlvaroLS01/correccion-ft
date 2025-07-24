@@ -84,11 +84,12 @@ public class GenerarFtDeFsService {
                         guardarXmlAntiguo(uidFt, xmlFtOriginal);
                         Document combinado = combinarTickets(fs, ft);
                         log.debug("procesarCsv() - Tickets combinados");
-                        String uidDiarioCaja = obtenerUidDiarioCaja(fs);
-                        copiarMovimientos(conexion, uidDiarioCaja, uidFs, uidFt);
+                        String uidDiarioCajaFs = obtenerUidDiarioCaja(fs);
+                        String uidDiarioCajaFt = obtenerUidDiarioCaja(ft);
                         String xmlCorregido = marshalTicket(combinado);
                         TicketsDao.eliminarAlbaran(conexion, uidActividad, uidFt);
                         TicketsDao.actualizarTicket(conexion, uidActividad, uidFt, xmlCorregido);
+                        copiarMovimientos(conexion, uidDiarioCajaFs, uidDiarioCajaFt, uidFs, uidFt);
                         conexion.commit();
                         log.debug("procesarCsv() - Ticket " + uidFt + " actualizado");
                     }
@@ -177,14 +178,14 @@ public class GenerarFtDeFsService {
         return null;
     }
 
-    private void copiarMovimientos(Connection conexion, String uidDiarioCaja, String uidFs, String uidFt)
+    private void copiarMovimientos(Connection conexion, String uidDiarioCajaFs, String uidDiarioCajaFt, String uidFs, String uidFt)
             throws SQLException {
-        if (uidDiarioCaja == null) {
+        if (uidDiarioCajaFs == null || uidDiarioCajaFt == null) {
             return;
         }
 
         List<Movimiento> movFs = new ArrayList<>();
-        ResultSet rs = TicketsDao.consultarMovimientosCaja(conexion, uidActividad, uidDiarioCaja, uidFs);
+        ResultSet rs = TicketsDao.consultarMovimientosCaja(conexion, uidActividad, uidDiarioCajaFs, uidFs);
         while (rs.next()) {
             Movimiento m = new Movimiento();
             m.linea = rs.getInt("linea");
@@ -204,24 +205,32 @@ public class GenerarFtDeFsService {
         rs.close();
 
         List<Movimiento> movFt = new ArrayList<>();
-        rs = TicketsDao.consultarMovimientosCaja(conexion, uidActividad, uidDiarioCaja, uidFt);
+        rs = TicketsDao.consultarMovimientosCaja(conexion, uidActividad, uidDiarioCajaFt, uidFt);
+        int maxLineaFt = 0;
         while (rs.next()) {
             Movimiento m = new Movimiento();
+            int linea = rs.getInt("linea");
+            if (linea > maxLineaFt) {
+                maxLineaFt = linea;
+            }
             m.concepto = rs.getString("concepto");
             m.documento = rs.getString("documento");
             movFt.add(m);
         }
         rs.close();
+        TicketsDao.borrarMovimientosCaja(conexion, uidActividad, uidDiarioCajaFt, uidFt);
 
-        TicketsDao.borrarMovimientosCaja(conexion, uidActividad, uidDiarioCaja, uidFt);
+        // Obtener el maximo numero de linea existente tras borrar
+        int lineaActual = TicketsDao.obtenerMaxLineaCaja(conexion, uidActividad, uidDiarioCajaFt);
+        if (lineaActual < maxLineaFt) {
+            lineaActual = maxLineaFt;
+        }
 
-        for (int i = 0; i < movFs.size(); i++) {
-            Movimiento src = movFs.get(i);
-            String concepto = movFt.size() > i && movFt.get(i).concepto != null ? movFt.get(i).concepto
-                    : (!movFt.isEmpty() ? movFt.get(0).concepto : null);
-            String documento = movFt.size() > i && movFt.get(i).documento != null ? movFt.get(i).documento
-                    : (!movFt.isEmpty() ? movFt.get(0).documento : null);
-            TicketsDao.insertarMovimientoCaja(conexion, uidActividad, uidDiarioCaja, src.linea, src.fecha,
+        for (Movimiento src : movFs) {
+            lineaActual++;
+            String concepto = !movFt.isEmpty() && movFt.get(0).concepto != null ? movFt.get(0).concepto : null;
+            String documento = !movFt.isEmpty() && movFt.get(0).documento != null ? movFt.get(0).documento : null;
+            TicketsDao.insertarMovimientoCaja(conexion, uidActividad, uidDiarioCajaFt, lineaActual, src.fecha,
                     src.cargo, src.abono, concepto, documento, src.codmedpag, uidFt, src.codconceptoMov,
                     src.idTipoDocumento, src.uidTransaccionDet, src.coddivisa, src.tipoDeCambio, src.usuario);
         }

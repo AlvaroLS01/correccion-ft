@@ -184,6 +184,24 @@ public class TicketsDao {
                 stmt.close();
         }
 
+        public static int obtenerMaxLineaCaja(Connection conexion, String uidActividad, String uidDiarioCaja)
+                        throws SQLException {
+                String sql = "select max(linea) as max_linea from d_caja_det_tbl where uid_actividad = ? and uid_diario_caja = ?";
+                PreparedStatement stmt = conexion.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY,
+                                ResultSet.CONCUR_READ_ONLY);
+                stmt.setString(1, uidActividad);
+                stmt.setString(2, uidDiarioCaja);
+                log.info("obtenerMaxLineaCaja() - " + stmt.toString());
+                ResultSet rs = stmt.executeQuery();
+                int max = 0;
+                if (rs.next()) {
+                        max = rs.getInt("max_linea");
+                }
+                rs.close();
+                stmt.close();
+                return max;
+        }
+
         public static void insertarMovimientoCaja(Connection conexion, String uidActividad, String uidDiarioCaja,
                         int linea, java.sql.Timestamp fecha, java.math.BigDecimal cargo, java.math.BigDecimal abono,
                         String concepto, String documento, String codmedpag, String idDocumento,
