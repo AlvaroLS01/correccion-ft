@@ -25,6 +25,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.NamedNodeMap;
 import com.comerzzia.core.util.xml.XMLDocument;
 import com.comerzzia.core.util.xml.XMLDocumentException;
 
@@ -164,8 +165,40 @@ public class GenerarFtDeFsService {
         Element cabeceraFt = (Element) ft.getElementsByTagName("cabecera").item(0);
         Element cabeceraFs = (Element) fs.getElementsByTagName("cabecera").item(0);
         if (cabeceraFt != null && cabeceraFs != null) {
-            Node importado = fs.importNode(cabeceraFt, true);
-            cabeceraFs.getParentNode().replaceChild(importado, cabeceraFs);
+            // Creamos una nueva cabecera con los mismos atributos que la FS
+            Element nuevaCabecera = fs.createElement("cabecera");
+            NamedNodeMap attrs = cabeceraFs.getAttributes();
+            for (int i = 0; i < attrs.getLength(); i++) {
+                Node attr = attrs.item(i);
+                nuevaCabecera.setAttribute(attr.getNodeName(), attr.getNodeValue());
+            }
+
+            // Copiamos de la FT todos los nodos desde <uid_ticket> hasta </empresa>
+            NodeList hijosFt = cabeceraFt.getChildNodes();
+            for (int i = 0; i < hijosFt.getLength(); i++) {
+                Node n = hijosFt.item(i);
+                Node copia = fs.importNode(n, true);
+                nuevaCabecera.appendChild(copia);
+                if (n.getNodeType() == Node.ELEMENT_NODE && "empresa".equals(n.getNodeName())) {
+                    break;
+                }
+            }
+
+            // Añadimos a continuación los nodos de la FS posteriores a </empresa>
+            boolean anadir = false;
+            NodeList hijosFs = cabeceraFs.getChildNodes();
+            for (int i = 0; i < hijosFs.getLength(); i++) {
+                Node n = hijosFs.item(i);
+                if (anadir) {
+                    Node copia = fs.importNode(n, true);
+                    nuevaCabecera.appendChild(copia);
+                }
+                if (n.getNodeType() == Node.ELEMENT_NODE && "empresa".equals(n.getNodeName())) {
+                    anadir = true;
+                }
+            }
+
+            cabeceraFs.getParentNode().replaceChild(nuevaCabecera, cabeceraFs);
         }
         return fs;
     }
